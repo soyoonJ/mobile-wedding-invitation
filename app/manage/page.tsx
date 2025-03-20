@@ -4,13 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, Edit, Eye, Share2, Trash2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 
 export default async function ManagePage() {
-	const cookieStore = await cookies();
-	const supabase = createClient(cookieStore);
+	const supabase = await createClient();
 
-	const { data: invitations } = await supabase.from("invitations").select("*");
+	const {
+		data: { user },
+	} = await supabase.auth.getUser();
+
+	const { data: invitations } = await supabase
+		.from("invitations")
+		.select("*")
+		.eq("userId", user?.id);
 
 	return (
 		<div className="container max-w-md mx-auto p-4">
@@ -24,7 +29,7 @@ export default async function ManagePage() {
 			</div>
 
 			<div className="space-y-4">
-				{invitations.map((invitation) => (
+				{invitations?.map((invitation) => (
 					<Card key={invitation.id}>
 						<div className="flex">
 							<div className="relative w-24 h-32">
